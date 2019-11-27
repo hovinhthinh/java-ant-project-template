@@ -7,11 +7,11 @@ CLASSPATH=./lib/; export CLASSPATH=$(find "$CLASSPATH" -name '*.jar' -type f -pr
 
 np=$(($1-1))
 echo "Split data"
-java -cp $CLASSPATH:./antbuild/ util.FileSplitter $3 $1 1>>$4.out 2>>$4.err
+java -cp $CLASSPATH:./antbuild/ util.FileSplitter $3 $1
 
 echo "Run in parallel"
 for i in $(seq -f "%02g" 0 ${np}); do
-java -cp $CLASSPATH:./antbuild/ -Xmx8G $2 $3.part$i.gz $4.part$i.gz ${@:5} 1>>$4.out 2>>$4.err &
+java -cp $CLASSPATH:./antbuild/ -Xmx8G $2 $3.part$i.gz $4.part$i.gz ${@:5} 1>$4.part$i.out 2>$4.part$i.err &
 done
 
 wait
@@ -19,5 +19,7 @@ wait
 echo "Combine result"
 zcat $4.part*.gz | gzip > $4
 echo "Clean"
-rm $3.part*.gz $4.part*.gz
-
+# Remove input parts.
+rm $3.part*.gz
+# Remove output parts.
+rm $4.part*.gz
